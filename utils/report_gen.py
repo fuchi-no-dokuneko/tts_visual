@@ -1,5 +1,6 @@
 import json
 import os
+from html import escape
 
 class ReportGenerator:
     def __init__(self, output_dir):
@@ -45,7 +46,7 @@ class ReportGenerator:
                 <tr>
                     <th class="user-cell">Character / Text</th>
                     <th>Reference <span class="badge badge-ref">REF</span></th>
-                    {"".join([f"<th>{v}</th>" for v in versions])}
+                    {"".join([f"<th>{escape(str(v))}</th>" for v in versions])}
                 </tr>
             </thead>
             <tbody>
@@ -58,18 +59,18 @@ class ReportGenerator:
             html_content += f"""
                 <tr>
                     <td class="user-cell">
-                        <div class="user-name">{r['name']}</div>
-                        <div class="user-text">{r['text']}</div>
+                        <div class="user-name">{escape(str(r['name']))}</div>
+                        <div class="user-text">{escape(str(r['text']))}</div>
                     </td>
                     <td>
-                        <audio controls src="{ref_rel}"></audio>
+                        <audio controls src="{escape(ref_rel, quote=True)}"></audio>
                     </td>
 """
             for v in versions:
                 audio_path = r.get(v, "")
                 if audio_path and os.path.exists(audio_path):
                     audio_rel = os.path.relpath(audio_path, self.output_dir)
-                    html_content += f'<td><audio controls src="{audio_rel}"></audio></td>'
+                    html_content += f'<td><audio controls src="{escape(audio_rel, quote=True)}"></audio></td>'
                 else:
                     html_content += '<td><span style="color:#e74c3c; font-size:12px;">Missing</span></td>'
             
