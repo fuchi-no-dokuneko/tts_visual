@@ -44,6 +44,8 @@ class EvaluationConfig:
     seed: int
     max_items: int
     audio_policy: str
+    existing_output: str
+    reference_policy: str
     preflight_only: bool
 
 
@@ -63,6 +65,10 @@ def build_parser():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-items", type=int, default=100)
     parser.add_argument("--audio-policy", choices=("clip", "reject"), default="clip")
+    parser.add_argument(
+        "--existing-output", choices=("resume", "overwrite", "fail"), default="resume"
+    )
+    parser.add_argument("--reference-policy", choices=("copy", "omit"), default="copy")
     parser.add_argument("--preflight", action="store_true", help="validate inputs without loading a model")
     return parser
 
@@ -101,6 +107,8 @@ def parse_config(argv=None):
         seed=args.seed,
         max_items=args.max_items,
         audio_policy=args.audio_policy,
+        existing_output=args.existing_output,
+        reference_policy=args.reference_policy,
         preflight_only=args.preflight,
     )
     validate_config(config)
