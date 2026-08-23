@@ -53,11 +53,11 @@ def execute(command):
 def configure_real_inputs(context):
     context.model_root = required_directory("TTS_VISUAL_UAT_MODEL_ROOT")
     context.reference_root = required_directory("TTS_VISUAL_UAT_REFERENCE_ROOT")
-    context.version = os.environ.get("TTS_VISUAL_UAT_VERSION", "v2")
-    context.target_text = os.environ.get("TTS_VISUAL_UAT_TARGET", "Daily evaluator acceptance sample.")
-    context.device = os.environ.get("TTS_VISUAL_UAT_DEVICE", "cuda")
-    context.precision = os.environ.get("TTS_VISUAL_UAT_PRECISION", "float16")
-    context.weights_file = os.environ.get("TTS_VISUAL_UAT_WEIGHTS_FILE")
+    context.version = os.environ.get("TTS_VISUAL_UAT_VERSION") or "v2"
+    context.target_text = os.environ.get("TTS_VISUAL_UAT_TARGET") or "Daily evaluator acceptance sample."
+    context.device = os.environ.get("TTS_VISUAL_UAT_DEVICE") or "cuda"
+    context.precision = os.environ.get("TTS_VISUAL_UAT_PRECISION") or "float16"
+    context.weights_file = os.environ.get("TTS_VISUAL_UAT_WEIGHTS_FILE") or None
     context.output = context.artifact_dir / "portable-report"
 
 

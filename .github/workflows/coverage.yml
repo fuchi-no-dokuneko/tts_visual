@@ -2,7 +2,7 @@ name: Coverage and SonarQube
 
 on:
   push:
-    branches: [main]
+    branches: [main, "tickets/**"]
   pull_request:
   workflow_dispatch:
 
@@ -13,18 +13,28 @@ jobs:
   test-and-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
         with:
           python-version: "3.11"
-      - name: Install test dependencies
-        run: python -m pip install pytest coverage
-      - name: Run tests with coverage
+      - name: Install locked test dependencies
+        env:
+          TTS_VISUAL_VENV: .venv
+        run: ./install.sh requirements-test.lock
+      - name: Prove Gherkin bindings
+        run: PATH="$PWD/.venv/bin:$PATH" scripts/check-uat-bindings.sh
+      - name: Run tests and enforce coverage
         run: |
-          python -m coverage run --source=. --omit='tests/*' -m pytest -q --junitxml=test-results.xml
-          python -m coverage xml -o coverage.xml
+          .venv/bin/python -m coverage run -m pytest -q --junitxml=test-results.xml
+          .venv/bin/python -m coverage report --fail-under=95
+          .venv/bin/python -m coverage xml
+      - name: Require model-contract evidence
+        run: |
+          .venv/bin/python scripts/model-contract-evidence.py \
+            --junit test-results.xml --output model-contract-evidence.json
+          test -s model-contract-evidence.json
       - name: Verify SonarQube reports
         run: |
           test -s coverage.xml
@@ -35,7 +45,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           if [ -z "$SONAR_TOKEN" ]; then
-            echo "::error::Missing SONAR_TOKEN repository secret; coverage cannot be published."
+            echo "::error::Missing SONAR_TOKEN; coverage cannot be published."
             exit 1
           fi
       - name: Run SonarQube Cloud analysis
@@ -43,12 +53,13 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: Upload test reports
+      - name: Upload verification evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: coverage-${{ github.run_attempt }}
+          name: verification-${{ github.run_attempt }}
           path: |
             coverage.xml
             test-results.xml
+            model-contract-evidence.json
           if-no-files-found: error

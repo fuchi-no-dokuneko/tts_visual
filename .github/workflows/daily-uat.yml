@@ -1,0 +1,58 @@
+name: Daily real-model UAT
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+    inputs:
+      run_real:
+        description: Run on the configured real-model runner
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  bindings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: "3.11"
+      - name: Install locked test dependencies
+        run: ./install.sh requirements-test.lock
+      - name: Prove every UAT step is bound
+        run: PATH="$PWD/.venv/bin:$PATH" scripts/check-uat-bindings.sh
+
+  real-model:
+    if: github.event_name == 'schedule' || inputs.run_real
+    needs: bindings
+    runs-on: [self-hosted, linux, tts-gpu]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Verify provisioned runtime
+        run: python -c "import behave, numpy, soundfile, torch"
+      - name: Run real-model UAT
+        env:
+          TTS_VISUAL_UAT_MODEL_ROOT: ${{ vars.TTS_VISUAL_UAT_MODEL_ROOT }}
+          TTS_VISUAL_UAT_REFERENCE_ROOT: ${{ vars.TTS_VISUAL_UAT_REFERENCE_ROOT }}
+          TTS_VISUAL_UAT_VERSION: ${{ vars.TTS_VISUAL_UAT_VERSION }}
+          TTS_VISUAL_UAT_DEVICE: ${{ vars.TTS_VISUAL_UAT_DEVICE }}
+          TTS_VISUAL_UAT_PRECISION: ${{ vars.TTS_VISUAL_UAT_PRECISION }}
+          TTS_VISUAL_UAT_WEIGHTS_FILE: ${{ vars.TTS_VISUAL_UAT_WEIGHTS_FILE }}
+          RUN_SONAR_SCANNER: ${{ vars.TTS_VISUAL_RUN_SONAR }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: scripts/run-daily-uat.sh
+      - name: Upload UAT evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: daily-uat-${{ github.run_attempt }}
+          path: uat-artifacts/
+          if-no-files-found: error

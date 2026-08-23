@@ -1,0 +1,14 @@
+[run]
+source =
+    batch_runner
+    config
+    engines
+    utils
+
+[report]
+fail_under = 95
+show_missing = True
+skip_covered = False
+
+[xml]
+output = coverage.xml

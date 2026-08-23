@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tts-visual"
+version = "1.0.0"
+description = "Portable GPT-SoVITS batch evaluator and comparison report"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy==2.5.2",
+    "soundfile==0.14.0",
+    "torch==2.5.1",
+]
+
+[project.scripts]
+tts-visual = "batch_runner:main"
+
+[tool.setuptools]
+py-modules = ["batch_runner", "config"]
+
+[tool.setuptools.packages.find]
+include = ["engines*", "utils*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"

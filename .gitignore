@@ -3,9 +3,10 @@ __pycache__/
 .coverage
 coverage.xml
 test-results.xml
+model-contract-evidence.json
 htmlcov/
 .pytest_cache/
-.venv/
+.venv*/
 .local-dep/
 uat-artifacts/
 browser-*/

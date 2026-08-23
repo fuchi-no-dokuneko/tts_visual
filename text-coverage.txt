@@ -7,3 +7,5 @@ utils.artifacts: Nothing mocked; real checksums, WAV probes, fingerprints, resum
 utils.report_gen: Nothing mocked; real copied WAV assets, escaped HTML, relative manifests, move portability, and Chromium loading tested.
 features.environment: Git command mocked only in unit coverage; checklist booleans, timestamps, diagnostics, and Sonar XML tested.
 features.steps.daily_uat_steps: Production model is unavailable locally; dry-run bindings pass, while real CLI, WAV, and Chromium steps await configured UAT inputs.
+scripts.model-contract-evidence: Git command runs in subprocess; passing, failed, and missing JUnit model-contract cases tested with real XML files.
+tools.ipv4only.sitecustomize: Socket lookup is not unit-tested; it is exercised by bounded dependency installs and filters installer DNS results to IPv4.

@@ -1,3 +1,3 @@
-繁體中文（MVP）：補齊真實檔案、程序、瀏覽器及失敗測試；完成可攜報告、續跑隔離、鎖定依賴、95% 覆蓋率、Gherkin UAT、文件與最終 CI 驗證。
+繁體中文：待驗證全新鎖定環境、CLI 細節與最終 CI；真實模型 UAT 需要已配置模型、參考音訊及自架 GPU runner。
 
-English (MVP): Add real file, process, browser, and failure tests; finish portable reports, resume quarantine, locked dependencies, 95% coverage, Gherkin UAT, documentation, and final CI verification.
+English: Verify a clean locked environment, CLI refinements, and final CI. Real-model UAT requires configured models, references, and a self-hosted GPU runner.
