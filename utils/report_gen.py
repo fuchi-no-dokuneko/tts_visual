@@ -55,6 +55,9 @@ class ReportGenerator:
         }
 
     def generate_html(self, results, versions, reference_policy="copy", private_roots=()):
+        report_assets = self.output_dir / "assets"
+        if report_assets.exists():
+            shutil.rmtree(report_assets)
         assets = []
         rows = []
         for index, result in enumerate(results, start=1):

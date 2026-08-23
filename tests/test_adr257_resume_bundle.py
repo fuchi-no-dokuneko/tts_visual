@@ -89,6 +89,20 @@ def test_bundle_remains_decodable_after_move_and_has_no_absolute_private_paths(t
             assert decoded.getnframes() > 0
 
 
+def test_omit_policy_removes_previously_copied_reference_audio(tmp_path):
+    config = make_config(tmp_path)
+    assert batch_runner.run(config, engine_factory=SuccessfulEngine) == 0
+    assert list((config.output / "assets" / "references").glob("*.wav"))
+
+    omitted = replace(config, reference_policy="omit")
+    assert batch_runner.run(omitted, engine_factory=SuccessfulEngine) == 0
+
+    manifest = json.loads((config.output / "report_manifest.json").read_text(encoding="utf-8"))
+    assert not (config.output / "assets" / "references").exists()
+    assert all(not item["path"].startswith("assets/references/") for item in manifest["assets"])
+    assert "Omitted" in (config.output / "index.html").read_text(encoding="utf-8")
+
+
 def test_bundle_validator_rejects_tampering_and_path_escape(tmp_path):
     config = make_config(tmp_path)
     assert batch_runner.run(config, engine_factory=SuccessfulEngine) == 0
