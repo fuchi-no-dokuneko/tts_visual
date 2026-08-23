@@ -9,7 +9,7 @@ description = "Portable GPT-SoVITS batch evaluator and comparison report"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "numpy==2.5.2",
+    "numpy==2.4.6",
     "soundfile==0.14.0",
     "torch==2.5.1",
 ]
