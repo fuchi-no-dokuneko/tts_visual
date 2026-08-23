@@ -1,0 +1,3 @@
+繁體中文（MVP）：補齊真實檔案、程序、瀏覽器及失敗測試；完成可攜報告、續跑隔離、鎖定依賴、95% 覆蓋率、Gherkin UAT、文件與最終 CI 驗證。
+
+English (MVP): Add real file, process, browser, and failure tests; finish portable reports, resume quarantine, locked dependencies, 95% coverage, Gherkin UAT, documentation, and final CI verification.
