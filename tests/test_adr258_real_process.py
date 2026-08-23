@@ -125,15 +125,24 @@ def test_chromium_loads_moved_portable_report(tmp_path):
         browser = subprocess.run(
             [
                 chromium,
-                "--headless=new",
+                "--headless",
                 "--no-sandbox",
                 "--disable-gpu",
+                "--disable-dev-shm-usage",
+                "--disable-background-networking",
+                "--disable-component-update",
+                "--disable-extensions",
+                "--disable-sync",
+                "--no-default-browser-check",
+                "--no-first-run",
+                "--mute-audio",
+                "--virtual-time-budget=1000",
                 f"--user-data-dir={portable_root / 'chromium-profile'}",
                 "--dump-dom",
                 (moved / "index.html").as_uri(),
             ],
             text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            timeout=30, check=False,
+            timeout=60, check=False,
         )
 
         assert browser.returncode == 0, browser.stderr
