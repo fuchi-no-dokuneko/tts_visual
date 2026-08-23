@@ -1,5 +1,6 @@
 __pycache__/
 *.py[cod]
+*.egg-info/
 .coverage
 coverage.xml
 test-results.xml
@@ -10,3 +11,4 @@ htmlcov/
 .local-dep/
 uat-artifacts/
 browser-*/
+uat-fixture-*/

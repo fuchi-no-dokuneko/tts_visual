@@ -13,6 +13,7 @@ pluggy==1.6.0
 pycparser==3.0
 Pygments==2.21.0
 pytest==9.1.1
+setuptools==80.9.0
 six==1.17.0
 soundfile==0.14.0
 typing_extensions==4.16.0
