@@ -25,6 +25,7 @@ GPT-SoVITS and its model files remain external. `--gpt-sovits-root` must point t
   --precision float16 \
   --seed 7 \
   --max-items 10 \
+  --max-target-chars 1000 \
   --preflight
 ```
 

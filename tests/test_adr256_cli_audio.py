@@ -1,5 +1,6 @@
 import json
 import wave
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -27,6 +28,50 @@ def test_preflight_reports_missing_dependencies_models_and_invalid_cpu_precision
     assert "CPU execution supports only --precision float32" in message
     assert "Missing Python dependency 'torch'" in message
     assert "Missing gpt weight for v2" in message
+
+
+def test_preflight_validates_prompt_limit_output_and_weight_shape(tmp_path, monkeypatch):
+    config = make_config(tmp_path)
+    output_file = tmp_path / "not-a-directory"
+    output_file.write_text("occupied", encoding="utf-8")
+    monkeypatch.setattr("config.importlib.util.find_spec", lambda name: object())
+    invalid = replace(
+        config,
+        output=output_file,
+        target_text="too long",
+        max_target_chars=3,
+        weights=[],
+    )
+
+    with pytest.raises(ConfigurationError) as raised:
+        validate_config(invalid)
+
+    message = str(raised.value)
+    assert "Output path is not a directory" in message
+    assert "Target prompt has 8 characters; limit is 3" in message
+    assert "Weights configuration must be a JSON object" in message
+
+
+def test_preflight_requires_reference_pair_model_entry_writable_output_and_path_values(tmp_path, monkeypatch):
+    config = make_config(tmp_path)
+    config.reference_root.joinpath("voice.txt").unlink()
+    config.gpt_sovits_root.joinpath("GPT_SoVITS/TTS_infer_pack/TTS.py").unlink()
+    monkeypatch.setattr("config.importlib.util.find_spec", lambda name: object())
+    monkeypatch.setattr("config.os.access", lambda path, mode: False)
+    invalid = replace(
+        config,
+        output=tmp_path / "new-output",
+        weights={"v2": {"gpt": 123, "sovits": "sovits.pth"}},
+    )
+
+    with pytest.raises(ConfigurationError) as raised:
+        validate_config(invalid)
+
+    message = str(raised.value)
+    assert "no matching WAV and TXT pair" in message
+    assert "Python entry point is missing" in message
+    assert "Output parent is not writable" in message
+    assert "Invalid gpt weight path" in message
 
 
 def test_float_audio_is_clipped_without_integer_wraparound_and_decodes(tmp_path):

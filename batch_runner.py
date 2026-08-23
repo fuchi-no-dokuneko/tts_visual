@@ -51,6 +51,7 @@ def _new_manifest(config):
             "precision": config.precision,
             "seed": config.seed,
             "max_items": config.max_items,
+            "max_target_chars": config.max_target_chars,
             "audio_policy": config.audio_policy,
             "reference_policy": config.reference_policy,
         },

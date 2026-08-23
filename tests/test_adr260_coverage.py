@@ -31,14 +31,15 @@ def test_parse_config_reads_prompt_and_weight_files(tmp_path, monkeypatch):
         "--reference-root", str(base.reference_root), "--output", str(base.output),
         "--gpt-sovits-root", str(base.gpt_sovits_root), "--target-file", str(prompt),
         "--weights-file", str(weights), "--version", "v2", "--language", " ja ",
-        "--seed", "9", "--max-items", "2", "--audio-policy", "reject",
+        "--seed", "9", "--max-items", "2", "--max-target-chars", "50",
+        "--audio-policy", "reject",
         "--existing-output", "overwrite", "--reference-policy", "omit", "--preflight",
     ])
 
     assert parsed.target_text == "file prompt"
     assert parsed.language == "ja"
     assert parsed.versions == ("v2",)
-    assert parsed.seed == 9 and parsed.max_items == 2
+    assert parsed.seed == 9 and parsed.max_items == 2 and parsed.max_target_chars == 50
     assert parsed.preflight_only is True
 
 
@@ -76,6 +77,7 @@ def test_validate_config_aggregates_input_mapping_and_cuda_errors(tmp_path, monk
         target_text="",
         language="",
         max_items=0,
+        max_target_chars=0,
         device="cuda",
         versions=("missing", "partial"),
         weights={"partial": {"gpt": ""}},
@@ -89,6 +91,7 @@ def test_validate_config_aggregates_input_mapping_and_cuda_errors(tmp_path, monk
         "Reference root is not a directory", "GPT-SoVITS root is not a directory",
         "Target prompt must not be empty", "Language must not be empty",
         "--max-items must be at least 1", "CUDA was requested",
+        "--max-target-chars must be at least 1",
         "No weight mapping for model version missing", "Missing gpt weight",
         "Missing sovits weight",
     ):
@@ -294,4 +297,4 @@ def test_reference_handler_real_missing_and_malformed_inputs(tmp_path, capsys):
     assert references[0]["text"] == ""
     assert references[0]["duration"] == 0
     assert references[0]["status"] == "Length Issue"
-    assert "Error reading" in capsys.readouterr().out
+    assert "Error reading" in capsys.readouterr().err

@@ -52,6 +52,7 @@ def run_fingerprint(config, reference, version):
         "device": config.device,
         "precision": config.precision,
         "seed": config.seed,
+        "max_target_chars": config.max_target_chars,
         "audio_policy": config.audio_policy,
     }
     canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))

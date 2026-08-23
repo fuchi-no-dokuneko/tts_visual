@@ -1,6 +1,7 @@
 import argparse
 import importlib.util
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -43,6 +44,7 @@ class EvaluationConfig:
     precision: str
     seed: int
     max_items: int
+    max_target_chars: int
     audio_policy: str
     existing_output: str
     reference_policy: str
@@ -64,6 +66,7 @@ def build_parser():
     parser.add_argument("--precision", choices=("float16", "float32"), default="float32")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-items", type=int, default=100)
+    parser.add_argument("--max-target-chars", type=int, default=1000)
     parser.add_argument("--audio-policy", choices=("clip", "reject"), default="clip")
     parser.add_argument(
         "--existing-output", choices=("resume", "overwrite", "fail"), default="resume"
@@ -98,7 +101,7 @@ def parse_config(argv=None):
         reference_root=args.reference_root.expanduser().resolve(),
         output=args.output.expanduser().resolve(),
         gpt_sovits_root=args.gpt_sovits_root.expanduser().resolve(),
-        versions=tuple(args.versions or SUPPORTED_VERSIONS),
+        versions=tuple(dict.fromkeys(args.versions or SUPPORTED_VERSIONS)),
         weights=weights,
         target_text=target_text,
         language=args.language.strip(),
@@ -106,6 +109,7 @@ def parse_config(argv=None):
         precision=args.precision,
         seed=args.seed,
         max_items=args.max_items,
+        max_target_chars=args.max_target_chars,
         audio_policy=args.audio_policy,
         existing_output=args.existing_output,
         reference_policy=args.reference_policy,
@@ -119,14 +123,32 @@ def validate_config(config):
     errors = []
     if not config.reference_root.is_dir():
         errors.append(f"Reference root is not a directory: {config.reference_root}")
+    elif not any(wav.with_suffix(".txt").is_file() for wav in config.reference_root.glob("*.wav")):
+        errors.append(f"Reference root has no matching WAV and TXT pair: {config.reference_root}")
     if not config.gpt_sovits_root.is_dir():
         errors.append(f"GPT-SoVITS root is not a directory: {config.gpt_sovits_root}")
+    elif not (config.gpt_sovits_root / "GPT_SoVITS" / "TTS_infer_pack" / "TTS.py").is_file():
+        errors.append(f"GPT-SoVITS Python entry point is missing under: {config.gpt_sovits_root}")
+    if config.output.exists() and not config.output.is_dir():
+        errors.append(f"Output path is not a directory: {config.output}")
+    else:
+        writable_parent = config.output
+        while not writable_parent.exists() and writable_parent != writable_parent.parent:
+            writable_parent = writable_parent.parent
+        if not writable_parent.is_dir() or not os.access(writable_parent, os.W_OK):
+            errors.append(f"Output parent is not writable: {writable_parent}")
     if not config.target_text:
         errors.append("Target prompt must not be empty")
     if not config.language:
         errors.append("Language must not be empty")
     if config.max_items < 1:
         errors.append("--max-items must be at least 1")
+    if config.max_target_chars < 1:
+        errors.append("--max-target-chars must be at least 1")
+    elif len(config.target_text) > config.max_target_chars:
+        errors.append(
+            f"Target prompt has {len(config.target_text)} characters; limit is {config.max_target_chars}"
+        )
     if config.device == "cpu" and config.precision != "float32":
         errors.append("CPU execution supports only --precision float32")
 
@@ -140,8 +162,10 @@ def validate_config(config):
         if not torch.cuda.is_available():
             errors.append("CUDA was requested but torch.cuda.is_available() is false")
 
+    if not isinstance(config.weights, dict):
+        errors.append("Weights configuration must be a JSON object")
     for version in config.versions:
-        version_weights = config.weights.get(version)
+        version_weights = config.weights.get(version) if isinstance(config.weights, dict) else None
         if not isinstance(version_weights, dict):
             errors.append(f"No weight mapping for model version {version}")
             continue
@@ -149,6 +173,9 @@ def validate_config(config):
             value = version_weights.get(kind)
             if not value:
                 errors.append(f"Missing {kind} weight for model version {version}")
+                continue
+            if not isinstance(value, (str, os.PathLike)):
+                errors.append(f"Invalid {kind} weight path for model version {version}")
                 continue
             path = Path(value)
             if not path.is_absolute():

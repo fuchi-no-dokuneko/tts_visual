@@ -24,6 +24,9 @@ def make_config(tmp_path, **changes):
 
     model_root = tmp_path / "model"
     model_root.mkdir()
+    entry_point = model_root / "GPT_SoVITS" / "TTS_infer_pack" / "TTS.py"
+    entry_point.parent.mkdir(parents=True)
+    entry_point.write_text("", encoding="utf-8")
     weights = {"v2": {"gpt": "gpt.ckpt", "sovits": "sovits.pth"}}
     (model_root / "gpt.ckpt").write_bytes(b"gpt")
     (model_root / "sovits.pth").write_bytes(b"sovits")
@@ -39,6 +42,7 @@ def make_config(tmp_path, **changes):
         precision="float32",
         seed=7,
         max_items=10,
+        max_target_chars=1000,
         audio_policy="clip",
         existing_output="resume",
         reference_policy="copy",
