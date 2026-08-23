@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import wave
 from pathlib import Path
 
@@ -99,19 +100,21 @@ def open_report(context):
     chromium = os.environ.get("TTS_VISUAL_CHROMIUM") or shutil.which("chromium") or shutil.which("chromium-browser")
     assert chromium, "Chromium is required for report UAT"
     screenshot = context.artifact_dir / "report.png"
-    browser = subprocess.run(
-        [
-            chromium,
-            "--headless=new",
-            "--no-sandbox",
-            "--disable-gpu",
-            f"--user-data-dir={context.artifact_dir / 'chromium-profile'}",
-            f"--screenshot={screenshot}",
-            "--window-size=1440,900",
-            (moved / "index.html").as_uri(),
-        ],
-        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        timeout=60, check=False,
-    )
+    with tempfile.TemporaryDirectory(prefix="tts-visual-chromium-") as temporary:
+        profile = Path(temporary) / "profile"
+        browser = subprocess.run(
+            [
+                chromium,
+                "--headless=new",
+                "--no-sandbox",
+                "--disable-gpu",
+                f"--user-data-dir={profile}",
+                f"--screenshot={screenshot}",
+                "--window-size=1440,900",
+                (moved / "index.html").as_uri(),
+            ],
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            timeout=60, check=False,
+        )
     assert browser.returncode == 0, browser.stderr
     assert screenshot.is_file() and screenshot.stat().st_size > 0
