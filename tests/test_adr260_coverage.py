@@ -273,6 +273,7 @@ def test_artifact_probe_resume_and_audio_failure_branches(tmp_path, monkeypatch)
     previous = {
         "status": "complete", "fingerprint": "same",
         "sha256": hashlib.sha256(b"not-wave").hexdigest(),
+        "bytes": len(b"not-wave"),
     }
     assert validate_resume(corrupt, previous, "same")[1].startswith("artifact decode failed")
     assert sha256_file(corrupt) == previous["sha256"]

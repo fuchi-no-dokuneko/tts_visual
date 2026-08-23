@@ -3,7 +3,41 @@ import shutil
 from html import escape
 from pathlib import Path
 
-from utils.artifacts import sha256_file
+from utils.artifacts import probe_wav, sha256_file
+
+
+def _bundle_path(root, relative):
+    relative_path = Path(relative)
+    if relative_path.is_absolute():
+        raise ValueError(f"Bundle path must be relative: {relative}")
+    candidate = (root / relative_path).resolve()
+    resolved_root = root.resolve()
+    if candidate != resolved_root and resolved_root not in candidate.parents:
+        raise ValueError(f"Bundle path leaves report root: {relative}")
+    return candidate
+
+
+def validate_report_bundle(output_dir):
+    root = Path(output_dir)
+    manifest = json.loads((root / "report_manifest.json").read_text(encoding="utf-8"))
+    index = _bundle_path(root, manifest["index"]["path"])
+    if sha256_file(index) != manifest["index"]["sha256"]:
+        raise ValueError("Report HTML checksum mismatch")
+    for asset in manifest["assets"]:
+        path = _bundle_path(root, asset["path"])
+        if sha256_file(path) != asset["sha256"] or path.stat().st_size != asset["bytes"]:
+            raise ValueError(f"Report asset checksum mismatch: {asset['path']}")
+        probe_wav(path)
+    return manifest
+
+
+def _public_text(value, private_roots):
+    text = str(value)
+    roots = {str(Path.home()), *(str(Path(root)) for root in private_roots)}
+    for private in sorted(roots, key=len, reverse=True):
+        if private:
+            text = text.replace(private, "<private-path>")
+    return text
 
 
 class ReportGenerator:
@@ -20,11 +54,15 @@ class ReportGenerator:
             "bytes": destination.stat().st_size,
         }
 
-    def generate_html(self, results, versions, reference_policy="copy"):
+    def generate_html(self, results, versions, reference_policy="copy", private_roots=()):
         assets = []
         rows = []
         for index, result in enumerate(results, start=1):
-            row = {"name": str(result["name"]), "text": str(result["text"]), "audio": {}}
+            row = {
+                "name": _public_text(result["name"], private_roots),
+                "text": _public_text(result["text"], private_roots),
+                "audio": {},
+            }
             if reference_policy == "copy":
                 relative, record = self._copy_asset(
                     result["wav_path"], Path("assets") / "references" / f"reference-{index:04d}.wav"
@@ -53,6 +91,7 @@ class ReportGenerator:
         (self.output_dir / "report_manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
         )
+        validate_report_bundle(self.output_dir)
         return str(report_path)
 
     @staticmethod

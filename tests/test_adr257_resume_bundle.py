@@ -6,7 +6,9 @@ from dataclasses import replace
 from pathlib import Path
 
 import batch_runner
+import pytest
 from tests.helpers import SuccessfulEngine, make_config
+from utils.report_gen import validate_report_bundle
 
 
 def load_manifest(config):
@@ -61,6 +63,9 @@ def test_changed_parameter_fingerprint_forces_regeneration(tmp_path):
 
 def test_bundle_remains_decodable_after_move_and_has_no_absolute_private_paths(tmp_path):
     config = make_config(tmp_path)
+    config.reference_root.joinpath("voice.txt").write_text(
+        f"private source at {tmp_path}", encoding="utf-8"
+    )
     assert batch_runner.run(config, engine_factory=SuccessfulEngine) == 0
     private_paths = (str(tmp_path), str(Path.home()))
 
@@ -69,17 +74,37 @@ def test_bundle_remains_decodable_after_move_and_has_no_absolute_private_paths(t
     html = (moved / "index.html").read_text(encoding="utf-8")
     run_json = (moved / "results_meta.json").read_text(encoding="utf-8")
     report_json = (moved / "report_manifest.json").read_text(encoding="utf-8")
+    validated = validate_report_bundle(moved)
 
     for private in private_paths:
         assert private not in html
         assert private not in run_json
         assert private not in report_json
     sources = re.findall(r'src="([^"]+\.wav)"', html)
+    assert validated["reference_policy"] == "copy"
     assert len(sources) == 2
     for source in sources:
         assert not Path(source).is_absolute()
         with wave.open(str(moved / source), "rb") as decoded:
             assert decoded.getnframes() > 0
+
+
+def test_bundle_validator_rejects_tampering_and_path_escape(tmp_path):
+    config = make_config(tmp_path)
+    assert batch_runner.run(config, engine_factory=SuccessfulEngine) == 0
+    report_manifest_path = config.output / "report_manifest.json"
+    manifest = json.loads(report_manifest_path.read_text(encoding="utf-8"))
+    asset = config.output / manifest["assets"][0]["path"]
+    original = asset.read_bytes()
+    asset.write_bytes(original + b"tampered")
+    with pytest.raises(ValueError, match="asset checksum mismatch"):
+        validate_report_bundle(config.output)
+
+    asset.write_bytes(original)
+    manifest["assets"][0]["path"] = "../private.wav"
+    report_manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="leaves report root"):
+        validate_report_bundle(config.output)
 
 
 def test_existing_output_fail_policy_refuses_manifest(tmp_path, capsys):

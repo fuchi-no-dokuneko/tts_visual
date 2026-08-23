@@ -211,7 +211,17 @@ def run(config, engine_factory=None):
         from utils.report_gen import ReportGenerator
 
         report_path = ReportGenerator(str(config.output)).generate_html(
-            report_rows, config.versions, reference_policy=config.reference_policy
+            report_rows,
+            config.versions,
+            reference_policy=config.reference_policy,
+            private_roots=(
+                config.reference_root,
+                config.reference_root.parent,
+                config.gpt_sovits_root,
+                config.gpt_sovits_root.parent,
+                config.output,
+                config.output.parent,
+            ),
         )
         print(f"Report: {report_path}")
     except Exception as exc:

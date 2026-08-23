@@ -41,7 +41,9 @@ def test_report_generator_escapes_user_content(tmp_path):
         "v2": str(generated_path),
     }]
 
-    report_path = ReportGenerator(str(output_dir)).generate_html(results, ["v2"])
+    report_path = ReportGenerator(str(output_dir)).generate_html(
+        results, ["v2"], private_roots=(tmp_path,)
+    )
     report = open(report_path, encoding="utf-8").read()
 
     assert dangerous not in report

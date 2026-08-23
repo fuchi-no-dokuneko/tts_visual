@@ -4,7 +4,7 @@ engines.gsv_engine: GPT-SoVITS and torch contracts mocked; model switching, conf
 utils.audio_handler: Nothing mocked; real WAV pairing, duration, malformed audio, and missing text tested.
 utils.audio_io: SoundFile metadata is mocked for one rejection branch; real encode/decode, finite checks, clipping, channels, rates, and PCM metadata tested.
 utils.artifacts: Nothing mocked; real checksums, WAV probes, fingerprints, resume decisions, quarantine, and redaction tested.
-utils.report_gen: Nothing mocked; real copied WAV assets, escaped HTML, relative manifests, move portability, and Chromium loading tested.
+utils.report_gen: Nothing mocked; real copied WAV assets, privacy redaction, tamper/path rejection, move portability, and Chromium loading tested.
 features.environment: Git command mocked only in unit coverage; checklist booleans, timestamps, diagnostics, and Sonar XML tested.
 features.steps.daily_uat_steps: Production model is unavailable locally; dry-run bindings pass, while real CLI, WAV, and Chromium steps await configured UAT inputs.
 scripts.model-contract-evidence: Git command runs in subprocess; passing, failed, and missing JUnit model-contract cases tested with real XML files.

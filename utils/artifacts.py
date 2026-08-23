@@ -80,7 +80,13 @@ def validate_resume(path, previous, fingerprint):
     try:
         if sha256_file(path) != previous.get("sha256"):
             return False, "artifact checksum changed"
-        probe_wav(path)
+        if Path(path).stat().st_size != previous.get("bytes"):
+            return False, "artifact byte count changed"
+        decoded = probe_wav(path)
+        expected_audio = previous.get("audio", {})
+        for key in ("sample_rate", "channels", "frames"):
+            if expected_audio.get(key) != decoded.get(key):
+                return False, f"artifact {key} metadata changed"
     except (OSError, EOFError, wave.Error, ValueError) as exc:
         return False, f"artifact decode failed: {exc}"
     return True, None
