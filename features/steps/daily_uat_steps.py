@@ -100,8 +100,11 @@ def open_report(context):
     chromium = os.environ.get("TTS_VISUAL_CHROMIUM") or shutil.which("chromium") or shutil.which("chromium-browser")
     assert chromium, "Chromium is required for report UAT"
     screenshot = context.artifact_dir / "report.png"
-    with tempfile.TemporaryDirectory(prefix="tts-visual-chromium-") as temporary:
-        profile = Path(temporary) / "profile"
+    shutil.rmtree(context.artifact_dir / "chromium-profile", ignore_errors=True)
+    with tempfile.TemporaryDirectory(prefix="browser-", dir=REPOSITORY) as temporary:
+        profile_root = Path(temporary)
+        profile_root.chmod(0o700)
+        profile = profile_root / "profile"
         browser = subprocess.run(
             [
                 chromium,
