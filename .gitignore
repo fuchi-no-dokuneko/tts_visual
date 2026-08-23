@@ -8,3 +8,4 @@ htmlcov/
 .venv/
 .local-dep/
 uat-artifacts/
+browser-*/
