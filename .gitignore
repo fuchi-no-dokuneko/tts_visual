@@ -6,4 +6,5 @@ test-results.xml
 htmlcov/
 .pytest_cache/
 .venv/
+.local-dep/
 uat-artifacts/

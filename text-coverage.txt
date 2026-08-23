@@ -1,0 +1,7 @@
+batch_runner: Model engine mocked in policy tests; run status, interruption, resume, failure, and manifest paths tested.
+config: Dependency lookup and CUDA capability mocked; CLI parsing, paths, prompts, models, limits, device, and precision tested.
+engines.gsv_engine: GPT-SoVITS and torch contracts mocked; model switching, configuration, inference, and empty generation tested.
+utils.audio_handler: Nothing mocked; real WAV pairing, duration, malformed audio, and missing text tested.
+utils.audio_io: Nothing mocked; real SoundFile encode/decode, finite checks, clipping, channels, rates, and PCM metadata tested.
+utils.artifacts: Nothing mocked; real checksums, WAV probes, fingerprints, resume decisions, quarantine, and redaction tested.
+utils.report_gen: Nothing mocked; real copied WAV assets, escaped HTML, relative manifests, move portability, and Chromium loading tested.
