@@ -18,7 +18,7 @@ def write_wave(path, samples=None, sample_rate=8000):
 
 def make_config(tmp_path, **changes):
     reference_root = tmp_path / "references"
-    reference_root.mkdir()
+    reference_root.mkdir(parents=True)
     write_wave(reference_root / "voice.wav")
     (reference_root / "voice.txt").write_text("reference prompt", encoding="utf-8")
 
