@@ -40,6 +40,10 @@ Remove `--preflight` to synthesize. CPU requires `--precision float32`. Float au
 .venv/bin/python -m coverage run -m pytest --junitxml=test-results.xml
 .venv/bin/python -m coverage report --fail-under=95
 scripts/check-uat-bindings.sh
+scripts/run-daily-uat.sh
+scripts/run-demo-en.sh
+scripts/run-demo-yue.sh
 ```
 
 Real daily UAT requires `TTS_VISUAL_UAT_MODEL_ROOT` and `TTS_VISUAL_UAT_REFERENCE_ROOT`. Optional variables select version, target, device, precision, weights JSON, and Chromium. `scripts/run-daily-uat.sh` writes `checklist.json`, a screenshot, and `sonar-test-execution.xml`; set `RUN_SONAR_SCANNER=1` only where an authenticated local scanner is configured.
+The complete feature matrix, visible-desktop requirement, narration timing, and TTS/recording wrapper contract are in `features/README.md`. English and Cantonese demos are recording guides, not Sonar test evidence.

@@ -1,3 +1,3 @@
-繁體中文：本地實作與驗證完成。真實生產模型 UAT 尚需已配置模型、參考音訊及自架 GPU runner；模型契約完整流程已通過。
+繁體中文：真實 UAT 尚需模型、參考音訊、GPU runner；錄影尚需可見桌面與錄影封裝程式。模型契約流程已通過。
 
-English: Local implementation and verification are complete. Production-model UAT still requires configured models, references, and a self-hosted GPU runner; the full model-contract flow passes.
+English: Real UAT still needs models, references, and a GPU runner; recording needs a visible desktop and recorder wrapper. The model-contract flow passes.
