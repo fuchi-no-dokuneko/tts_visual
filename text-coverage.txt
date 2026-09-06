@@ -1,0 +1,12 @@
+batch_runner: Model engine mocked in policy tests; run status, interruption, resume, failure, and manifest paths tested.
+config: Dependency lookup and CUDA capability mocked; CLI parsing, paths, prompts, models, limits, device, and precision tested.
+engines.gsv_engine: GPT-SoVITS and torch contracts mocked; model switching, configuration, inference, and empty generation tested.
+utils.audio_handler: Nothing mocked; real WAV pairing, duration, malformed audio, and missing text tested.
+utils.audio_io: SoundFile metadata is mocked for one rejection branch; real encode/decode, finite checks, clipping, channels, rates, and PCM metadata tested.
+utils.artifacts: Nothing mocked; real checksums, WAV probes, fingerprints, resume decisions, quarantine, and redaction tested.
+utils.report_gen: Nothing mocked; real copied WAV assets, privacy redaction, tamper/path rejection, move portability, and Chromium loading tested.
+features.environment: Nothing mocked; real Git metadata, suite/feature paths, scenario and step booleans, timestamps, cleanup diagnostics, checklist JSON, and grouped Sonar XML are exercised.
+features.steps.daily_uat_steps: Production model is unavailable locally; dry bindings cover preflight rejection, real synthesis evidence, report content/privacy, portability, missing states, and output refusal; mocks: none.
+features.steps.demo_steps: Visible Chromium, timed English/Cantonese narration, report presentation, and recorder cleanup are bound; mocks: external TTS and recording wrappers are optional.
+scripts.model-contract-evidence: Git command runs in subprocess; passing, failed, and missing JUnit model-contract cases tested with real XML files.
+tools.ipv4only.sitecustomize: Socket lookup is not unit-tested; it is exercised by bounded dependency installs and filters installer DNS results to IPv4.

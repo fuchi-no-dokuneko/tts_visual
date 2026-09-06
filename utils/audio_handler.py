@@ -1,4 +1,5 @@
 import os
+import sys
 import wave
 import contextlib
 
@@ -12,8 +13,8 @@ class ReferenceHandler:
                 frames = f.getnframes()
                 rate = f.getframerate()
                 return frames / float(rate)
-        except Exception as e:
-            print(f"Error reading {file_path}: {e}")
+        except (OSError, EOFError, wave.Error) as e:
+            print(f"Error reading {file_path}: {e}", file=sys.stderr)
             return 0
 
     def scan_references(self):
@@ -35,7 +36,7 @@ class ReferenceHandler:
                 try:
                     with open(txt_path, 'r', encoding='utf-8') as f:
                         text = f.read().strip()
-                except:
+                except (OSError, UnicodeError):
                     text = ""
                 
                 duration = self.get_audio_duration(wav_path)
